@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Mock rpm. `rpm -q <pkg>`: "*present*" => installed.
+echo "rpm $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+pkg="${*: -1}"
+case "$pkg" in
+    *present*) exit 0 ;;
+    *) exit 1 ;;
+esac

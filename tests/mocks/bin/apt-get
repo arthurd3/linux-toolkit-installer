@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "apt-get $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit 0

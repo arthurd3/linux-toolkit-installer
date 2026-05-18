@@ -1,0 +1,16 @@
+# sample bundle — exercises every parser edge case
+name: Sample
+description: covers parser edge cases
+
+[core]
+normal    | debian=nrm-deb | fedora=nrm-fed | arch=nrm-arch | suse=nrm-suse
+multi     | debian=a+b     | fedora=c       | arch=d        | suse=e
+dashskip  | debian=-       | fedora=fed-only| arch=-        | suse=-
+omitskip  | fedora=onlyfed
+auronly   | debian=-       | fedora=-       | arch=aur:aurpkg | suse=-
+
+[optional]
+opt-tool  | debian=opt-deb | fedora=opt-fed | arch=opt-arch | suse=opt-suse
+
+# the next line is malformed (no pipe) and must be skipped, not fatal
+this_is_garbage_no_pipe

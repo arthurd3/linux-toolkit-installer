@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo "sudo $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+# `sudo -v` just validates; succeed without execing.
+[[ ${1:-} == "-v" ]] && exit 0
+exec "$@"

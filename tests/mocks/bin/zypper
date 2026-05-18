@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "zypper $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit 0

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Mock dpkg-query. Package = last arg. "*present*" => installed.
+echo "dpkg-query $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+pkg="${*: -1}"
+case "$pkg" in
+    *present*) echo "install ok installed"; exit 0 ;;
+    *) exit 1 ;;
+esac

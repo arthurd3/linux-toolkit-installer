@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Mock pacman. `-Qq <pkg>` query: "*present*" => installed. Others: capture, ok.
+echo "pacman $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+if [[ ${1:-} == "-Qq" ]]; then
+    pkg="${*: -1}"
+    case "$pkg" in
+        *present*) exit 0 ;;
+        *) exit 1 ;;
+    esac
+fi
+exit 0
