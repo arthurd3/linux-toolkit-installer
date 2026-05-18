@@ -47,16 +47,19 @@ _resolve() {
 
 @test "fedora forced, only dnf5 present -> PM_BIN=dnf5" {
     run _resolve force:fedora dnf5
+    [ "$status" -eq 0 ]
     [[ "$output" == *"NAME=dnf BIN=dnf5 FAM=fedora"* ]]
 }
 
 @test "fedora forced, dnf+dnf5+yum -> prefers dnf" {
     run _resolve force:fedora "dnf dnf5 yum"
+    [ "$status" -eq 0 ]
     [[ "$output" == *"NAME=dnf BIN=dnf FAM=fedora"* ]]
 }
 
 @test "fedora forced, only dnf -> PM_BIN=dnf (backward-compat)" {
     run _resolve force:fedora dnf
+    [ "$status" -eq 0 ]
     [[ "$output" == *"NAME=dnf BIN=dnf FAM=fedora"* ]]
 }
 
@@ -84,6 +87,7 @@ _resolve() {
     run _resolve osrel:unknown apt-get 1
     [ "$status" -eq 0 ]
     [[ "$output" == *"NAME=apt BIN=apt-get FAM=debian"* ]]
+    [[ "$output" == *"WARN: No recognized distro"* ]]
 }
 
 @test "unknown os-release, no PM, non-dry-run -> fatal exit 2" {
@@ -94,6 +98,13 @@ _resolve() {
 
 @test "unknown os-release, no PM, dry-run -> warn, nominal apt-get, no crash" {
     run _resolve osrel:unknown "" 1
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"NAME=apt BIN=apt-get FAM=debian"* ]]
+    [[ "$output" == *"WARN: no supported package manager found"* ]]
+}
+
+@test "os-release debian, no PM, dry-run -> nominal apt-get, family unchanged" {
+    run _resolve osrel:debian "" 1
     [ "$status" -eq 0 ]
     [[ "$output" == *"NAME=apt BIN=apt-get FAM=debian"* ]]
     [[ "$output" == *"WARN: no supported package manager found"* ]]

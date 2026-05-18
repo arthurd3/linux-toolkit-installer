@@ -134,7 +134,7 @@ pm_detect() {
         if pair=$(_pm_any_present); then
             PM_NAME=${pair%% *}; PM_BIN=${pair##* }
             DISTRO_FAMILY=$(_pm_family_for_logical "$PM_NAME")
-            info "No recognized distro; using '$PM_BIN' ($DISTRO_FAMILY) found on PATH."
+            warn "No recognized distro; using '$PM_BIN' ($DISTRO_FAMILY) found on PATH."
             return 0
         fi
     fi
