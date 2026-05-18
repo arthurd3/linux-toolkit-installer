@@ -60,6 +60,30 @@ banner() {
     printf '%s%s%s%s%s\n' "$C_CYAN" "$bl" "$bar" "$br" "$C_RESET"
 }
 
+# --- project header (block-letter wordmark; ASCII fallback) -----------------
+# Static art only — never generated, preserving the zero-dep guarantee.
+_header_art() {
+    if (( _LTI_FANCY )); then
+        printf '%s%s ██╗     ████████╗██╗%s\n'                       "$C_CYAN" "$C_BOLD" "$C_RESET"
+        printf '%s%s ██║     ╚══██╔══╝██║%s\n'                       "$C_CYAN" "$C_BOLD" "$C_RESET"
+        printf '%s%s ██║        ██║   ██║%s   %slinux-toolkit-installer%s\n' \
+            "$C_CYAN" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET"
+        printf '%s%s ███████╗   ██║   ██║%s   %sone-keypress dev toolkits%s\n' \
+            "$C_CYAN" "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET"
+        printf '%s%s ╚══════╝   ╚═╝   ╚═╝%s\n'                       "$C_CYAN" "$C_BOLD" "$C_RESET"
+    else
+        printf '=== linux-toolkit-installer ===\n'
+        printf 'one-keypress dev toolkits for any Linux distro\n'
+    fi
+}
+
+# header — the project identity block, terminated by one blank line.
+# No arguments. Companion: info_band (called separately by show_header).
+header() {
+    _header_art
+    printf '\n'
+}
+
 # --- info band (distro/family/counts/mode; pure — formats its args) ---------
 # info_band <distro> <family> <bundles> <tools> <dry_run0|1>
 # Fancy: two coloured lines + a closing cyan rule. Plain: two ASCII lines.

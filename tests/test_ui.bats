@@ -48,3 +48,21 @@ _render() {
     [[ "$output" == *"─"* ]]
     [[ "$output" == *$'\e['* ]]
 }
+
+@test "header plain: === wordmark + tagline, no block glyph, no ANSI" {
+    run _render 0 'header'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"=== linux-toolkit-installer ==="* ]]
+    [[ "$output" == *"one-keypress dev toolkits for any Linux distro"* ]]
+    [[ "$output" != *"█"* ]]
+    [[ "$output" != *$'\e['* ]]
+}
+
+@test "header fancy: block glyph + name + short tagline + ANSI" {
+    run _render 1 'header'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"█"* ]]
+    [[ "$output" == *"linux-toolkit-installer"* ]]
+    [[ "$output" == *"one-keypress dev toolkits"* ]]
+    [[ "$output" == *$'\e['* ]]
+}
