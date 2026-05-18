@@ -80,3 +80,43 @@ _detect() {
     '
     [ "$status" -eq 2 ]
 }
+
+# Detect family + pretty name from a given os-release fixture path.
+_detect3() {
+    OS_RELEASE_PATH="$1" bash -c '
+        source "'"$LTI_ROOT"'/lib/core.sh"
+        source "'"$LTI_ROOT"'/lib/distro.sh"
+        detect_distro_family
+        printf "%s|%s|%s\n" "$DISTRO_ID" "$DISTRO_FAMILY" "$DISTRO_PRETTY"
+    '
+}
+
+@test "DISTRO_PRETTY from PRETTY_NAME (ubuntu)" {
+    run _detect3 "$MOCKS/ubuntu"
+    [ "$status" -eq 0 ]
+    [ "$output" = "ubuntu|debian|Ubuntu 24.04 LTS" ]
+}
+
+@test "DISTRO_PRETTY falls back to NAME + VERSION_ID" {
+    run _detect3 "$MOCKS/nopretty"
+    [ "$status" -eq 0 ]
+    [ "$output" = "debian|debian|Frobnix 9" ]
+}
+
+@test "DISTRO_PRETTY for forced family is the forced id" {
+    run bash -c '
+        LTI_FORCE_FAMILY=fedora
+        source "'"$LTI_ROOT"'/lib/core.sh"
+        source "'"$LTI_ROOT"'/lib/distro.sh"
+        detect_distro_family
+        printf "%s|%s|%s\n" "$DISTRO_ID" "$DISTRO_FAMILY" "$DISTRO_PRETTY"
+    '
+    [ "$status" -eq 0 ]
+    [ "$output" = "forced:fedora|fedora|forced:fedora" ]
+}
+
+@test "DISTRO_PRETTY is 'unknown' when os-release missing" {
+    run _detect3 "$MOCKS/does-not-exist"
+    [ "$status" -eq 0 ]
+    [ "$output" = "|unknown|unknown" ]
+}

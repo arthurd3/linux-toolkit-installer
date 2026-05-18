@@ -1,0 +1,4 @@
+NAME="Frobnix"
+VERSION_ID="9"
+ID=debian
+ID_LIKE=debian

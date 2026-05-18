@@ -1,9 +1,11 @@
 # lib/distro.sh — detect the distro family from /etc/os-release.
 # Sourced (never executed). Safe to source more than once.
 #
-# Sets two globals:
+# Sets three globals:
 #   DISTRO_ID      raw ID= from os-release (or "forced:<f>")
 #   DISTRO_FAMILY  one of: debian fedora arch suse unknown
+#   DISTRO_PRETTY  human label: PRETTY_NAME -> NAME[+VERSION_ID] -> ID -> unknown
+#                  (for a forced family this is DISTRO_ID, e.g. "forced:debian")
 #
 # Test/override hooks:
 #   OS_RELEASE_PATH   path to read instead of /etc/os-release
@@ -33,6 +35,7 @@ _lti_family_of() {
 detect_distro_family() {
     DISTRO_ID=""
     DISTRO_FAMILY=""
+    DISTRO_PRETTY=""
 
     # Explicit override wins (validated against supported families).
     if [[ -n ${LTI_FORCE_FAMILY:-} ]]; then
@@ -42,11 +45,12 @@ detect_distro_family() {
         esac
         DISTRO_ID="forced:${LTI_FORCE_FAMILY}"
         DISTRO_FAMILY=$LTI_FORCE_FAMILY
+        DISTRO_PRETTY=$DISTRO_ID
         return 0
     fi
 
     local os_release=${OS_RELEASE_PATH:-/etc/os-release}
-    local id="" id_like="" line key val
+    local id="" id_like="" pretty="" nm="" ver="" line key val
 
     if [[ -r $os_release ]]; then
         while IFS= read -r line || [[ -n $line ]]; do
@@ -56,13 +60,26 @@ detect_distro_family() {
             val=${val#\"}; val=${val%\"}
             val=${val#\'}; val=${val%\'}
             case "$key" in
-                ID)      id=$val ;;
-                ID_LIKE) id_like=$val ;;
+                ID)          id=$val ;;
+                ID_LIKE)     id_like=$val ;;
+                PRETTY_NAME) pretty=$val ;;
+                NAME)        nm=$val ;;
+                VERSION_ID)  ver=$val ;;
             esac
         done < "$os_release"
     fi
 
     DISTRO_ID=$id
+
+    if [[ -n $pretty ]]; then
+        DISTRO_PRETTY=$pretty
+    elif [[ -n $nm ]]; then
+        DISTRO_PRETTY=${nm}${ver:+ $ver}
+    elif [[ -n $id ]]; then
+        DISTRO_PRETTY=$id
+    else
+        DISTRO_PRETTY=unknown
+    fi
 
     local fam="" tok
     if [[ -n $id ]]; then
