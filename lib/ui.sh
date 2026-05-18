@@ -60,6 +60,31 @@ banner() {
     printf '%s%s%s%s%s\n' "$C_CYAN" "$bl" "$bar" "$br" "$C_RESET"
 }
 
+# --- info band (distro/family/counts/mode; pure — formats its args) ---------
+# info_band <distro> <family> <bundles> <tools> <dry_run0|1>
+# Fancy: two coloured lines + a closing cyan rule. Plain: two ASCII lines.
+info_band() {
+    local distro=${1:-unknown} family=${2:-unknown}
+    local bundles=${3:-0} tools=${4:-0} dry=${5:-0}
+    local mode=OFF
+    (( dry )) && mode=ON
+    if (( _LTI_FANCY )); then
+        printf '  %sdistro%s  %s%s%s  ·  %sfamily%s  %s%s%s\n' \
+            "$C_DIM" "$C_RESET" "$C_BOLD" "$distro" "$C_RESET" \
+            "$C_DIM" "$C_RESET" "$C_BOLD" "$family" "$C_RESET"
+        printf '  %sbundles%s %s%s%s  ·  %s%s%s tools  ·  %sdry-run%s %s%s%s\n' \
+            "$C_DIM" "$C_RESET" "$C_BOLD" "$bundles" "$C_RESET" \
+            "$C_BOLD" "$tools" "$C_RESET" \
+            "$C_DIM" "$C_RESET" "$C_BOLD" "$mode" "$C_RESET"
+        local bar
+        bar=$(printf '%*s' 50 '')
+        printf '%s%s%s\n' "$C_CYAN" "${bar// /─}" "$C_RESET"
+    else
+        printf 'distro: %s   family: %s\n' "$distro" "$family"
+        printf 'bundles: %s   tools: %s   dry-run: %s\n' "$bundles" "$tools" "$mode"
+    fi
+}
+
 # --- yes/no prompt ----------------------------------------------------------
 # Returns 0 for yes. Auto-yes under --yes or --dry-run. Use in a conditional.
 confirm() {
