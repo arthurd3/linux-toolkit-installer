@@ -24,8 +24,7 @@ make test     # bash -n + shellcheck + bats
 make check    # the above + dry-run --all across all four families
 ```
 
-`make check` must pass. CI runs the same on `ubuntu-latest` and never installs
-a real package (dry-run only).
+`make check` must pass. It only ever dry-runs — it never installs a real package.
 
 ## Adding tests
 

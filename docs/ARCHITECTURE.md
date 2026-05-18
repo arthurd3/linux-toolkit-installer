@@ -44,4 +44,4 @@ install.sh args ─▶ detect_distro_family ─▶ pm_init
 
 Static + logic simulation lives in-repo (`bash -n`, shellcheck, bats with a
 mocked package manager, `--dry-run`). Real, mutating installs are deferred to
-the user (documented in the README). Nothing in CI ever installs a package.
+the user (documented in the README).
