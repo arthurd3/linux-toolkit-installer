@@ -1,0 +1,11 @@
+# Editor / OS noise
+*.swp
+*~
+.DS_Store
+
+# Logs and test artifacts
+*.log
+/tests/.tmp/
+
+# Tool caches
+.shellcheck/
