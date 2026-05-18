@@ -1,0 +1,22 @@
+# Java development toolkit  —  flagship bundle (fully populated)
+#
+# Java 17 LTS is the cross-distro default. To target another LTS, change only
+# the package names below (data-only, no code change). See docs/BUNDLES.md.
+#
+# Format:  <id> | debian=<pkg> | fedora=<pkg> | arch=<pkg> | suse=<pkg>
+#   omitted family or `=-`  -> skipped on that distro (warn, continue)
+#   `a+b`                   -> multiple packages
+#   `aur:<pkg>`             -> AUR package (arch only)
+
+name: Java
+description: JDK 17 (LTS), build tools (Maven, Gradle), and Java essentials
+
+[core]
+jdk         | debian=openjdk-17-jdk    | fedora=java-17-openjdk-devel | arch=jdk17-openjdk         | suse=java-17-openjdk-devel
+jdk-source  | debian=openjdk-17-source | fedora=java-17-openjdk-src   | arch=-                     | suse=java-17-openjdk-src
+maven       | debian=maven             | fedora=maven                 | arch=maven                | suse=maven
+gradle      | debian=gradle            | fedora=gradle                | arch=gradle               | suse=gradle
+
+[optional]
+visualvm          | debian=visualvm | fedora=visualvm | arch=visualvm              | suse=-
+jetbrains-toolbox | debian=-        | fedora=-        | arch=aur:jetbrains-toolbox | suse=-

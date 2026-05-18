@@ -1,0 +1,24 @@
+# Editors & terminal toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: Editors & Terminal
+description: Editors, shell, and modern terminal CLI tools (partial)
+
+[core]
+git        | debian=git           | fedora=git    | arch=git       | suse=git
+build      | debian=build-essential | fedora=make+gcc | arch=base-devel | suse=gcc+make
+vim        | debian=vim           | fedora=vim-enhanced | arch=vim | suse=vim
+neovim     | debian=neovim        | fedora=neovim | arch=neovim    | suse=neovim
+kitty      | debian=kitty         | fedora=kitty  | arch=kitty     | suse=kitty
+zsh        | debian=zsh           | fedora=zsh    | arch=zsh       | suse=zsh
+tmux       | debian=tmux          | fedora=tmux   | arch=tmux      | suse=tmux
+ripgrep    | debian=ripgrep       | fedora=ripgrep| arch=ripgrep   | suse=ripgrep
+fd         | debian=fd-find       | fedora=fd-find| arch=fd        | suse=fd
+bat        | debian=bat           | fedora=bat    | arch=bat       | suse=bat
+fzf        | debian=fzf           | fedora=fzf    | arch=fzf       | suse=fzf
+httpie     | debian=httpie        | fedora=httpie | arch=httpie    | suse=httpie
+
+[optional]
+eza        | debian=-             | fedora=eza    | arch=eza       | suse=-
+tldr       | debian=tldr          | fedora=tldr   | arch=tldr      | suse=-
+vscode     | debian=-             | fedora=-      | arch=aur:visual-studio-code-bin | suse=-

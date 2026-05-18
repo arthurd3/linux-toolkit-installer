@@ -1,0 +1,9 @@
+# DevOps / Docker toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: DevOps / Docker
+description: Container runtime and compose (partial)
+
+[core]
+docker          | debian=docker.io       | fedora=moby-engine    | arch=docker         | suse=docker
+docker-compose  | debian=docker-compose  | fedora=docker-compose | arch=docker-compose | suse=docker-compose

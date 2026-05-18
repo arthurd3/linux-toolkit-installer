@@ -1,0 +1,8 @@
+# Go development toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: Go
+description: The Go programming language toolchain (partial)
+
+[core]
+go   | debian=golang-go | fedora=golang | arch=go | suse=go

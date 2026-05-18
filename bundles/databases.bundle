@@ -1,0 +1,13 @@
+# Databases toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: Databases
+description: PostgreSQL, SQLite, Redis; GUI client (partial)
+
+[core]
+postgresql | debian=postgresql      | fedora=postgresql-server | arch=postgresql | suse=postgresql-server
+sqlite     | debian=sqlite3         | fedora=sqlite            | arch=sqlite     | suse=sqlite3
+redis      | debian=redis-server    | fedora=redis             | arch=redis      | suse=redis
+
+[optional]
+dbeaver    | debian=- | fedora=- | arch=aur:dbeaver | suse=-

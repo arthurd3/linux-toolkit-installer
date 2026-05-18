@@ -1,0 +1,13 @@
+# Node.js / Web development toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: Node / Web
+description: Node.js runtime and npm; web API clients (partial)
+
+[core]
+nodejs   | debian=nodejs | fedora=nodejs | arch=nodejs | suse=nodejs
+npm      | debian=npm    | fedora=npm    | arch=npm    | suse=npm
+
+[optional]
+insomnia | debian=- | fedora=- | arch=aur:insomnia     | suse=-
+postman  | debian=- | fedora=- | arch=aur:postman-bin  | suse=-

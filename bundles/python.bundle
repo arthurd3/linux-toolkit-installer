@@ -1,0 +1,13 @@
+# Python development toolkit
+# PARTIAL: names are best-effort across families; correct as data only.
+
+name: Python
+description: Python 3 interpreter, pip, pipx, venv (partial)
+
+[core]
+python   | debian=python3      | fedora=python3      | arch=python      | suse=python3
+pip      | debian=python3-pip  | fedora=python3-pip  | arch=python-pip  | suse=python3-pip
+pipx     | debian=pipx         | fedora=pipx         | arch=python-pipx | suse=python3-pipx
+
+[optional]
+venv     | debian=python3-venv | fedora=-            | arch=-           | suse=-
