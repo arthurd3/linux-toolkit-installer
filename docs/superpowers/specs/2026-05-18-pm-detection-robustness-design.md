@@ -132,8 +132,11 @@ mutating installs deferred to the user; no CI (removed).
     `yum -y makecache`.
   - fedora forced, only `dnf5` present → `dnf5`.
   - fedora forced, `dnf`+`dnf5`+`yum` present → picks `dnf` (preference order).
-  - debian forced, only `dnf` present → adopts dnf, `DISTRO_FAMILY` switches to
-    fedora, warn on stderr.
+  - os-release `debian` fixture, only `dnf` present (no apt) → adopts dnf,
+    `DISTRO_FAMILY` switches to fedora, warn on stderr. Adoption applies only
+    to os-release-detected families — never to `LTI_FORCE_FAMILY`.
+  - debian *forced*, only `dnf` present: non-dry-run → fatal exit 2 (override
+    locked, never adopts); `--dry-run` → warn + nominal `apt-get`, no switch.
   - `unknown` os-release fixture + `apt-get` present → adopts apt/debian.
   - `unknown` + no PM, non-dry-run → fatal, exit 2.
   - `unknown` + no PM, `--dry-run` → warn, prints, no crash.
