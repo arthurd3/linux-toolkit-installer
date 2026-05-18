@@ -99,3 +99,30 @@ _resolve() {
     [[ "$output" == *"auronly"* ]]
     [[ "$output" == *"Summary: Sample"* ]]
 }
+
+@test "bundle_count and tool_count over a controlled bundles dir" {
+    run bash -c '
+        tmp=$(mktemp -d); mkdir "$tmp/bundles"
+        cp "'"$SAMPLE"'" "$tmp/bundles/one.bundle"
+        export LTI_ROOT="$tmp"
+        source "'"$LTI_ROOT"'/lib/core.sh"
+        source "'"$LTI_ROOT"'/lib/ui.sh"
+        source "'"$LTI_ROOT"'/lib/bundle.sh"
+        printf "%s|%s\n" "$(bundle_count)" "$(tool_count)"
+        rm -rf "$tmp"
+    '
+    [ "$output" = "1|6" ]
+}
+
+@test "bundle_count and tool_count are 0 for an empty bundles dir" {
+    run bash -c '
+        tmp=$(mktemp -d); mkdir "$tmp/bundles"
+        export LTI_ROOT="$tmp"
+        source "'"$LTI_ROOT"'/lib/core.sh"
+        source "'"$LTI_ROOT"'/lib/ui.sh"
+        source "'"$LTI_ROOT"'/lib/bundle.sh"
+        printf "%s|%s\n" "$(bundle_count)" "$(tool_count)"
+        rm -rf "$tmp"
+    '
+    [ "$output" = "0|0" ]
+}

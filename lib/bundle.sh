@@ -94,6 +94,40 @@ bundle_list() {
     shopt -u nullglob
 }
 
+# bundle_count -> number of bundle files (0 if none).
+bundle_count() {
+    local f n=0
+    shopt -s nullglob
+    for f in "$LTI_ROOT"/bundles/*.bundle; do
+        n=$((n + 1))
+    done
+    shopt -u nullglob
+    printf '%s' "$n"
+    return 0
+}
+
+# tool_count -> total tool-definition lines across all bundles.
+# A tool line is non-empty, not a comment, not a [group] marker, not a
+# name:/description: header, and contains a '|'. Family-independent.
+tool_count() {
+    local f line t n=0
+    shopt -s nullglob
+    for f in "$LTI_ROOT"/bundles/*.bundle; do
+        while IFS= read -r line || [[ -n $line ]]; do
+            t=$(_trim "$line")
+            [[ -z $t || $t == '#'* ]] && continue
+            case "$t" in
+                '[core]'|'[optional]'|name:*|description:*) continue ;;
+            esac
+            [[ $t != *'|'* ]] && continue
+            n=$((n + 1))
+        done < "$f"
+    done
+    shopt -u nullglob
+    printf '%s' "$n"
+    return 0
+}
+
 # Resolve a bundle path from a slug or a file path.
 bundle_path() {
     local arg=$1
