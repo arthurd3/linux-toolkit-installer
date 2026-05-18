@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "dnf5 $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit 0
