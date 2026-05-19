@@ -169,11 +169,24 @@ pm_require_privileges() {
         return 0
     fi
     if ! command -v sudo >/dev/null 2>&1; then
-        lti_fatal "Not running as root and 'sudo' is not available." 2
+        if declare -F sudo_bootstrap >/dev/null 2>&1; then
+            if ! sudo_bootstrap "a real install needs root"; then
+                lti_fatal "No usable privilege path. Configure sudo (see the messages above) and re-run." 2
+            fi
+        else
+            lti_fatal "Not running as root and 'sudo' is not available." 2
+        fi
     fi
     info "Requesting sudo access (you may be prompted for your password)..."
     if ! sudo -v; then
-        lti_fatal "sudo authentication failed." 2
+        if declare -F sudo_bootstrap >/dev/null 2>&1; then
+            sudo_bootstrap "sudo is installed but not usable for this user" || true
+            if ! sudo -v; then
+                lti_fatal "sudo authentication failed (you may need to log out and back in after group changes)." 2
+            fi
+        else
+            lti_fatal "sudo authentication failed." 2
+        fi
     fi
     SUDO="sudo"
 }
