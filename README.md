@@ -87,7 +87,7 @@ of toolkits, and these keys:
 | `a` | Install the core group of **all** toolkits |
 | `d` | Toggle **dry-run** (preview-only, no changes) on/off |
 | `o` | Toggle **optional** extras on/off |
-| `s` | Set up a secure `sudo` privilege path |
+| `s` | Set up a secure `sudo` privilege path (shown unless you are already root) |
 | `q` | Quit |
 
 ### Command-line options
@@ -172,9 +172,11 @@ The full distro list and the package-manager resolution details are in
 
 ## Setting up sudo
 
-If `sudo` is not installed and you run a command that needs root, the tool
-detects this automatically and offers to set up `sudo` for you. You can also
-invoke it any time:
+On the **first run**, if `sudo` is not installed and you run a command that
+needs root, the tool detects this automatically and offers to set up `sudo`
+for you. On later runs it shows a one-line reminder instead (no repeated
+prompt) — menu key **`s`** stays available so you can set it up whenever you
+want. You can also invoke it any time:
 
 ```sh
 ./install.sh --setup-sudo   # standalone: install & configure, then exit
@@ -205,6 +207,13 @@ Or press **`s`** from the interactive menu.
    applied atomically with `install -m 0440 -o root -g root`.
 
 **Policy: NOPASSWD is never written. No `/etc/sudoers.d` drop-in is created.**
+
+**State file.** The tool records that it has run — plus the detected distro
+family, package manager, and last-seen `sudo` state — in a small `key=value`
+file at `${XDG_STATE_HOME:-~/.local/state}/linux-toolkit-installer/state`
+(override the location with the `LTI_STATE_FILE` environment variable). It is
+created mode `0600`, is never written during `--dry-run` or `--list`, and a
+write failure never blocks anything. No secrets are ever stored.
 
 After the bootstrap completes, **log out and back in** (or run
 `newgrp <group>`) for the new group membership to take effect.
