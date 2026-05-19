@@ -28,6 +28,7 @@ LTI_ROOT=$(cd -P -- "$(dirname -- "$_self")" && pwd)
 export LTI_ROOT
 
 source "$LTI_ROOT/lib/core.sh"
+source "$LTI_ROOT/lib/state.sh"
 source "$LTI_ROOT/lib/ui.sh"
 source "$LTI_ROOT/lib/distro.sh"
 source "$LTI_ROOT/lib/pkg.sh"
@@ -62,6 +63,28 @@ show_header() {
     header
     info_band "$DISTRO_PRETTY" "$DISTRO_FAMILY" \
               "$(bundle_count)" "$(tool_count)" "$DRY_RUN"
+}
+
+# --- persistent state: machine facts + first-run flag ----------------------
+_state_record() {
+    local now; now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    state_set schema 1
+    state_set first_run_done 1
+    if [[ -z $(state_get first_seen) ]]; then state_set first_seen "$now"; fi
+    state_set last_seen "$now"
+    state_set distro_family "${DISTRO_FAMILY:-unknown}"
+    if [[ -n ${PM_NAME:-} ]]; then state_set pm_name "$PM_NAME"; fi
+    if [[ -n ${PM_BIN:-} ]]; then state_set pm_bin "$PM_BIN"; fi
+    if declare -F sudo_privilege_state >/dev/null 2>&1; then
+        state_set sudo_state "$(sudo_privilege_state)"
+    fi
+    return 0
+}
+
+_state_save() {
+    _state_record
+    state_persist || warn "could not save state to $(state_path); continuing."
+    return 0
 }
 
 # --- --list ----------------------------------------------------------------
@@ -123,7 +146,10 @@ menu_loop() {
         printf '   a) Install ALL core toolkits\n'
         printf '   d) Toggle dry-run     [%s]\n' "$( ((DRY_RUN)) && echo ON || echo OFF)"
         printf '   o) Toggle optionals   [%s]\n' "$( ((WITH_OPTIONAL)) && echo ON || echo OFF)"
-        printf '   s) Set up secure sudo\n'
+        if declare -F sudo_privilege_state >/dev/null 2>&1 \
+           && [[ $(sudo_privilege_state) != root ]]; then
+            printf '   s) Set up secure sudo\n'
+        fi
         printf '   q) Quit\n'
 
         if ! read -rp "Select one: " choice; then choice=q; fi
@@ -182,14 +208,25 @@ main() {
         lti_fatal "Could not detect a supported distro (ID='${DISTRO_ID:-?}'). Supported families: ${LTI_SUPPORTED_FAMILIES}. Use --force-family to override." 2
     fi
 
-    # Pre-flight: only offer the bootstrap when sudo is genuinely missing and
-    # the action will need root. Never for --list / --setup-sudo / --dry-run,
-    # so `make check` and parseable --list output are unaffected.
+    # Persistent state: load, then snapshot first-run BEFORE anything persists
+    # (a later state_persist flips first_run_done; the decision must not move).
+    state_load
+    local _first_run=0
+    if state_is_first_run; then _first_run=1; fi
+
+    # Pre-flight: only when sudo is genuinely missing and the action needs
+    # root. The automatic bootstrap is offered ONCE (first run); on later runs
+    # a one-line reminder replaces it. Never for --list / --setup-sudo /
+    # --dry-run, so `make check` and parseable --list output are unaffected.
     case "$action" in
         all|bundle|"")
             if (( ! DRY_RUN )) && declare -F sudo_privilege_state >/dev/null 2>&1 \
                && [[ $(sudo_privilege_state) == missing ]]; then
-                sudo_bootstrap "pre-flight: this action needs root" || true
+                if (( _first_run )); then
+                    sudo_bootstrap "pre-flight: this action needs root" || true
+                else
+                    warn "sudo is not installed — you need it to install packages. Pick 's' in the menu, or run with --setup-sudo."
+                fi
             fi ;;
     esac
 
@@ -197,13 +234,13 @@ main() {
         list)
             do_list ;;
         setup-sudo)
-            pm_init; sudo_bootstrap "explicit --setup-sudo" && exit 0 || exit 1 ;;
+            pm_init; _state_save; sudo_bootstrap "explicit --setup-sudo" && exit 0 || exit 1 ;;
         all)
-            pm_init; do_all ;;
+            pm_init; _state_save; do_all ;;
         bundle)
-            pm_init; bundle_run "$want_bundle" ;;
+            pm_init; _state_save; bundle_run "$want_bundle" ;;
         "")
-            pm_init; menu_loop ;;
+            pm_init; _state_save; menu_loop ;;
     esac
 }
 
