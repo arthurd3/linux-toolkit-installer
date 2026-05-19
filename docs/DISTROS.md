@@ -51,6 +51,45 @@ Privileged commands are prefixed with `sudo` (nothing if already root).
 The first column shows the canonical binary; the actually-invoked binary is
 whatever `pm_detect` resolved (`PM_BIN`) — e.g. `yum`/`dnf5` for `fedora`.
 
+## Privilege escalation (sudo bootstrap)
+
+When `sudo` is genuinely missing and a real install needs root, the tool offers
+to install and configure it for you.  It can also be invoked explicitly at any
+time with `--setup-sudo` or menu key `s`.
+
+### Admin group per family
+
+Each distro family has a conventional admin group that grants `sudo` access:
+
+| Family | Admin group | sudoers line |
+|--------|-------------|--------------|
+| `debian` | `sudo` | `%sudo ALL=(ALL:ALL) ALL` |
+| `fedora` | `wheel` | `%wheel ALL=(ALL) ALL` |
+| `arch`   | `wheel` | `%wheel ALL=(ALL) ALL` |
+| `suse`   | `sudo` | `%sudo ALL=(ALL:ALL) ALL` |
+
+**Arch note:** Arch Linux ships `%wheel` commented out in `/etc/sudoers`.
+The bootstrap enables it via a `visudo -cf`-validated, atomically-applied
+edit (`install -m 0440 -o root -g root`).  On Debian, Fedora, and openSUSE
+the line is already active — the step is a safe no-op.
+
+### How root access is obtained
+
+`su` is used to become root in order to install the `sudo` package.  You type
+the **root password directly into `su`**; the tool never reads or stores it.
+If `su` is unavailable or declined, the tool prints the exact commands so you
+can run them yourself.
+
+### Policy
+
+- **NOPASSWD is never written** — the sudoers entry always requires a password.
+- **No `/etc/sudoers.d` drop-in** — the change is made directly to
+  `/etc/sudoers`, validated with `visudo -cf`, and applied atomically.
+
+After the bootstrap completes, **log out and back in** (or run
+`newgrp <group>`) for the new group membership to take effect in the current
+shell.
+
 ## Overrides / testing hooks
 
 - `LTI_FORCE_FAMILY=<debian|fedora|arch|suse>` — force the family (also the

@@ -6,7 +6,7 @@ job, a stable interface, and is testable in isolation.
 ## Sourcing order (set by `install.sh`)
 
 ```
-core.sh  ->  ui.sh  ->  distro.sh  ->  pkg.sh  ->  aur.sh  ->  bundle.sh
+core.sh  ->  ui.sh  ->  distro.sh  ->  pkg.sh  ->  sudo.sh  ->  aur.sh  ->  bundle.sh
 ```
 
 Each module guards against double-sourcing and is safe to re-source.
@@ -16,7 +16,8 @@ Each module guards against double-sourcing and is safe to re-source.
 | `lib/core.sh`   | strict mode (`set -euo pipefail`), `LTI_ROOT` resolution (symlink-safe), runtime-flag globals, EXIT cleanup trap, `lti_fatal`, `require_bash4` | — |
 | `lib/ui.sh`     | color gating (`[[ -t 1 && -z $NO_COLOR && $TERM != dumb ]]`), `say/info/ok/warn/error`, `banner`, `hr`, `confirm` | core |
 | `lib/distro.sh` | `detect_distro_family` from `/etc/os-release` `ID`/`ID_LIKE` → `debian\|fedora\|arch\|suse\|unknown` | core |
-| `lib/pkg.sh`    | `pm_detect` (logical `PM_NAME` vs concrete `PM_BIN`), `pm_init/pm_require_privileges/pm_refresh/pm_is_installed/pm_install` over apt/dnf/pacman/zypper; sudo strategy; dry-run | core, ui, distro |
+| `lib/pkg.sh`    | `pm_detect` (logical `PM_NAME` vs concrete `PM_BIN`), `pm_init/pm_require_privileges/pm_refresh/pm_is_installed/pm_install` over apt/dnf/pacman/zypper; sudo strategy; dry-run; shared pure helper `_pm_install_argv` | core, ui, distro |
+| `lib/sudo.sh`   | privilege bootstrap: detect root/missing/present; install `sudo` via `su`; configure admin group + `visudo`-validated sudoers; teach/auto/interactive modes | core, ui, distro, pkg |
 | `lib/aur.sh`    | Arch-only `yay` bootstrap (hardened: mktemp + EXIT trap) and `aur_install` | core, ui, pkg |
 | `lib/bundle.sh` | parse `*.bundle`, `bundle_resolve` (pure), `bundle_run`, summary accounting | core, ui, pkg, aur |
 
@@ -52,12 +53,20 @@ actually installed.
 ```
 install.sh args ─▶ detect_distro_family ─▶ pm_init
                                             │
+                       [sudo missing?] ─▶ sudo_bootstrap (pre-flight or --setup-sudo)
+                                            │
               bundle file ─▶ bundle_resolve(family,line) ─▶ {native|aur|none|bad}
                                             │
                        pm_is_installed (idempotency) ─▶ plan
                                             │
                  confirm ─▶ pm_refresh ─▶ pm_install / aur_install ─▶ summary
 ```
+
+`sudo_bootstrap` is invoked in two places: (1) at startup pre-flight — only
+when `sudo` is genuinely missing, the action is not `--list`/`--dry-run`, and
+you are not already root; (2) explicitly via `--setup-sudo` or menu key `s`.
+`pm_require_privileges` also re-invokes the bootstrap if `sudo -v` fails after
+a fresh install.
 
 ## `set -e` foot-guns (deliberate handling)
 

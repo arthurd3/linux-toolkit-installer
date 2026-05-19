@@ -24,6 +24,7 @@ openSUSE** family distros.
 - [What gets installed](#what-gets-installed)
 - [How it picks the right packages](#how-it-picks-the-right-packages)
 - [Safety and re-runs](#safety-and-re-runs)
+- [Setting up sudo](#setting-up-sudo)
 - [Install as a command](#install-as-a-command)
 - [Troubleshooting](#troubleshooting)
 - [Docs and contributing](#docs-and-contributing)
@@ -48,7 +49,8 @@ it figures out the rest.
 - **Bash 4+** and coreutils (present on every supported distro by default).
 - **`git`** to clone this repository.
 - **`sudo`** rights — only for *real* installs. Previews (`--dry-run`) need
-  no root at all.
+  no root at all. If `sudo` is not installed, the tool can set it up for you
+  (see [Setting up sudo](#setting-up-sudo) below).
 - Nothing else. On Arch, optional extras that come from the AUR use `yay`,
   which the tool bootstraps for you automatically.
 
@@ -85,6 +87,7 @@ of toolkits, and these keys:
 | `a` | Install the core group of **all** toolkits |
 | `d` | Toggle **dry-run** (preview-only, no changes) on/off |
 | `o` | Toggle **optional** extras on/off |
+| `s` | Set up a secure `sudo` privilege path |
 | `q` | Quit |
 
 ### Command-line options
@@ -98,6 +101,7 @@ of toolkits, and these keys:
 | `--dry-run` | Print actions, change nothing, no `sudo` needed |
 | `--yes`, `-y` | Skip confirmation prompts |
 | `--force-family <f>` | Override distro detection: `debian`, `fedora`, `arch`, or `suse` |
+| `--setup-sudo` | Install and securely configure `sudo` (admin group + `visudo`-validated sudoers), then exit |
 | `-h`, `--help` | Show usage |
 
 ### Common examples
@@ -165,6 +169,45 @@ The full distro list and the package-manager resolution details are in
 - **One missing package won't stop the rest.** If a tool has no package for
   your distro, it's skipped with a warning and the rest of the toolkit still
   installs.
+
+## Setting up sudo
+
+If `sudo` is not installed and you run a command that needs root, the tool
+detects this automatically and offers to set up `sudo` for you. You can also
+invoke it any time:
+
+```sh
+./install.sh --setup-sudo   # standalone: install & configure, then exit
+```
+
+Or press **`s`** from the interactive menu.
+
+**Modes**
+
+| Invocation | Behaviour |
+|------------|-----------|
+| `--setup-sudo --dry-run` | **Teach mode** — prints the exact commands; changes nothing. Good for reviewing what will happen. |
+| `--setup-sudo --yes` | **Automatic** — runs without prompting. |
+| `--setup-sudo` (alone) | **Interactive** — asks before each step. |
+
+**What it does**
+
+1. Uses `su` to run as root, so you type the **root password directly into
+   `su`** — the tool never reads or stores it.  If `su` is unavailable or you
+   decline, it prints the exact commands to run yourself instead.
+2. Installs the `sudo` package via the system package manager.
+3. Adds your user to the admin group for your distro family:
+   `sudo` on Debian/openSUSE, `wheel` on Fedora/Arch.
+4. Ensures the group's line is active in `/etc/sudoers`.  On Arch,
+   `%wheel` ships commented out — the tool enables it.  On Debian, Fedora, and
+   openSUSE it is already active, so this step is a no-op.
+5. The sudoers edit is validated with `visudo -cf` on a temporary copy and
+   applied atomically with `install -m 0440 -o root -g root`.
+
+**Policy: NOPASSWD is never written. No `/etc/sudoers.d` drop-in is created.**
+
+After the bootstrap completes, **log out and back in** (or run
+`newgrp <group>`) for the new group membership to take effect.
 
 ## Install as a command
 
