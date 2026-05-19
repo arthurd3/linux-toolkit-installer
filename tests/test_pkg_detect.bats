@@ -109,3 +109,22 @@ _resolve() {
     [[ "$output" == *"NAME=apt BIN=apt-get FAM=debian"* ]]
     [[ "$output" == *"WARN: no supported package manager found"* ]]
 }
+
+@test "pm_install/pm_refresh argv use resolved PM_BIN (fedora/yum)" {
+    local t; t="$(mktemp -d)"
+    ln -s "$LTI_ROOT/tests/mocks/bin/yum" "$t/yum"
+    run env LTI_ROOT="$LTI_ROOT" LTI_FORCE_FAMILY=fedora DRY_RUN=1 TMPBIN="$t" \
+        bash -c '
+            source "$LTI_ROOT/lib/core.sh"
+            source "$LTI_ROOT/lib/ui.sh"
+            source "$LTI_ROOT/lib/distro.sh"
+            source "$LTI_ROOT/lib/pkg.sh"
+            PATH="$TMPBIN"
+            detect_distro_family; pm_init
+            pm_refresh
+            pm_install foo bar
+        '
+    rm -rf "$t"
+    [[ "$output" == *"[dry-run] sudo yum -y makecache"* ]]
+    [[ "$output" == *"[dry-run] sudo yum install -y foo bar"* ]]
+}

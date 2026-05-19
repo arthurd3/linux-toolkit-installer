@@ -182,13 +182,13 @@ pm_refresh() {
     local cmd
     # shellcheck disable=SC2206  # intentional word-split of $SUDO
     case "$PM_NAME" in
-        apt)    cmd=( $SUDO apt-get update ) ;;
-        dnf)    cmd=( $SUDO dnf -y makecache ) ;;
-        pacman) cmd=( $SUDO pacman -Sy --noconfirm ) ;;
-        zypper) cmd=( $SUDO zypper --non-interactive refresh ) ;;
+        apt)    cmd=( $SUDO "$PM_BIN" update ) ;;
+        dnf)    cmd=( $SUDO "$PM_BIN" -y makecache ) ;;
+        pacman) cmd=( $SUDO "$PM_BIN" -Sy --noconfirm ) ;;
+        zypper) cmd=( $SUDO "$PM_BIN" --non-interactive refresh ) ;;
         *) error "pm_refresh: pm_init not called"; return 1 ;;
     esac
-    info "Refreshing package index ($PM_NAME)..."
+    info "Refreshing package index ($PM_BIN)..."
     _pm_run "${cmd[@]}"
     PM_REFRESHED=1
 }
@@ -218,10 +218,10 @@ pm_install() {
     local cmd
     # shellcheck disable=SC2206  # intentional word-split of $SUDO
     case "$PM_NAME" in
-        apt)    cmd=( $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@" ) ;;
-        dnf)    cmd=( $SUDO dnf install -y "$@" ) ;;
-        pacman) cmd=( $SUDO pacman -S --needed --noconfirm "$@" ) ;;
-        zypper) cmd=( $SUDO zypper --non-interactive install "$@" ) ;;
+        apt)    cmd=( $SUDO env DEBIAN_FRONTEND=noninteractive "$PM_BIN" install -y "$@" ) ;;
+        dnf)    cmd=( $SUDO "$PM_BIN" install -y "$@" ) ;;
+        pacman) cmd=( $SUDO "$PM_BIN" -S --needed --noconfirm "$@" ) ;;
+        zypper) cmd=( $SUDO "$PM_BIN" --non-interactive install "$@" ) ;;
         *) error "pm_install: pm_init not called"; return 1 ;;
     esac
     _pm_run "${cmd[@]}"
