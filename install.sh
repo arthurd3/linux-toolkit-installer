@@ -31,6 +31,7 @@ source "$LTI_ROOT/lib/core.sh"
 source "$LTI_ROOT/lib/ui.sh"
 source "$LTI_ROOT/lib/distro.sh"
 source "$LTI_ROOT/lib/pkg.sh"
+source "$LTI_ROOT/lib/sudo.sh"
 source "$LTI_ROOT/lib/aur.sh"
 source "$LTI_ROOT/lib/bundle.sh"
 
