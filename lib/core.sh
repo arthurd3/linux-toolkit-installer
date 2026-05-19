@@ -50,7 +50,7 @@ export LTI_ROOT
 : "${SUDO:=}"
 export DRY_RUN ASSUME_YES WITH_OPTIONAL PM_REFRESHED SUDO
 
-# --- temp-dir registry + EXIT cleanup ---------------------------------------
+# --- temp-path registry + EXIT cleanup (files or dirs) ----------------------
 _LTI_TMPDIRS=()
 
 lti_register_tmp() {
@@ -60,7 +60,7 @@ lti_register_tmp() {
 _lti_cleanup() {
     local d
     for d in ${_LTI_TMPDIRS[@]+"${_LTI_TMPDIRS[@]}"}; do
-        if [[ -n $d && -d $d ]]; then rm -rf -- "$d"; fi
+        if [[ -n $d && -e $d ]]; then rm -rf -- "$d"; fi
     done
 }
 trap _lti_cleanup EXIT
