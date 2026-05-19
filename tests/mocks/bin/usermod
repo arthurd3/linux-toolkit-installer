@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "usermod $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit "${LTI_MOCK_USERMOD_RC:-0}"

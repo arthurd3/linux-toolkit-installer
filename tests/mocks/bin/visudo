@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo "visudo $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+# `visudo -c`/`-cf <file>` validates; LTI_MOCK_VISUDO_RC drives the reject test.
+case "${1:-}" in -c|-cf) exit "${LTI_MOCK_VISUDO_RC:-0}" ;; esac
+exit 0

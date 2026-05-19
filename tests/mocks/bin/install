@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "install $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+# Capture the atomic sudoers apply; never actually install anything.
+exit 0

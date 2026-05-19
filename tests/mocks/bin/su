@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "su $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+# Capture only — never run the wrapped command. LTI_MOCK_SU_RC tests fallback.
+exit "${LTI_MOCK_SU_RC:-0}"
