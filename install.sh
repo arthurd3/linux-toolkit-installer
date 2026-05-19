@@ -55,9 +55,16 @@ With no options, an interactive menu is shown.
 EOF
 }
 
+# --- project header (block art + info band) --------------------------------
+show_header() {
+    header
+    info_band "$DISTRO_PRETTY" "$DISTRO_FAMILY" \
+              "$(bundle_count)" "$(tool_count)" "$DRY_RUN"
+}
+
 # --- --list ----------------------------------------------------------------
 do_list() {
-    banner "linux-toolkit-installer" "Distro: ${DISTRO_ID:-?}  (family: ${DISTRO_FAMILY})"
+    show_header
     local slug name desc f line t group r rc id rest kind pkgs k tag
     while IFS=$'\t' read -r slug name desc; do
         f="$LTI_ROOT/bundles/${slug}.bundle"
@@ -105,7 +112,7 @@ menu_loop() {
 
     while true; do
         if (( _LTI_FANCY )) && command -v clear >/dev/null 2>&1; then clear; fi
-        banner "linux-toolkit-installer" "Distro: ${DISTRO_ID:-?}  (family: ${DISTRO_FAMILY})"
+        show_header
         say "Select a toolkit to install:"
         for i in "${!slugs[@]}"; do
             printf '  %2d) %s\n' "$((i + 1))" "${names[i]}"
