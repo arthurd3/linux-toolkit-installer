@@ -60,7 +60,7 @@ lti_register_tmp() {
 _lti_cleanup() {
     local d
     for d in ${_LTI_TMPDIRS[@]+"${_LTI_TMPDIRS[@]}"}; do
-        [[ -n $d && -d $d ]] && rm -rf -- "$d"
+        if [[ -n $d && -d $d ]]; then rm -rf -- "$d"; fi
     done
 }
 trap _lti_cleanup EXIT

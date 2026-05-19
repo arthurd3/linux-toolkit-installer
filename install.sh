@@ -50,6 +50,7 @@ OPTIONS
   --dry-run                  show actions, change nothing (no root needed)
   --yes, -y                  assume "yes" to all prompts
   --force-family <f>         override distro family: debian|fedora|arch|suse
+  --setup-sudo               install & securely configure sudo, then exit
   -h, --help                 this help
 
 With no options, an interactive menu is shown.
@@ -122,6 +123,7 @@ menu_loop() {
         printf '   a) Install ALL core toolkits\n'
         printf '   d) Toggle dry-run     [%s]\n' "$( ((DRY_RUN)) && echo ON || echo OFF)"
         printf '   o) Toggle optionals   [%s]\n' "$( ((WITH_OPTIONAL)) && echo ON || echo OFF)"
+        printf '   s) Set up secure sudo\n'
         printf '   q) Quit\n'
 
         if ! read -rp "Select one: " choice; then choice=q; fi
@@ -130,6 +132,7 @@ menu_loop() {
         case "$choice" in
             q|Q) say "Bye."; return 0 ;;
             a|A) do_all || true ;;
+            s|S) sudo_bootstrap "from menu" || true ;;
             d|D) DRY_RUN=$(( DRY_RUN ^ 1 )); continue ;;
             o|O) WITH_OPTIONAL=$(( WITH_OPTIONAL ^ 1 )); continue ;;
             '')  continue ;;
@@ -166,6 +169,7 @@ main() {
                 (( $# > 0 )) || lti_fatal "--force-family requires a value" 2
                 LTI_FORCE_FAMILY=$1 ;;
             --force-family=*) LTI_FORCE_FAMILY=${1#*=} ;;
+            --setup-sudo)     action=setup-sudo ;;
             *) error "unknown option: $1"; usage; exit 2 ;;
         esac
         shift || true
@@ -178,9 +182,22 @@ main() {
         lti_fatal "Could not detect a supported distro (ID='${DISTRO_ID:-?}'). Supported families: ${LTI_SUPPORTED_FAMILIES}. Use --force-family to override." 2
     fi
 
+    # Pre-flight: only offer the bootstrap when sudo is genuinely missing and
+    # the action will need root. Never for --list / --setup-sudo / --dry-run,
+    # so `make check` and parseable --list output are unaffected.
+    case "$action" in
+        all|bundle|"")
+            if (( ! DRY_RUN )) && declare -F sudo_privilege_state >/dev/null 2>&1 \
+               && [[ $(sudo_privilege_state) == missing ]]; then
+                sudo_bootstrap "pre-flight: this action needs root" || true
+            fi ;;
+    esac
+
     case "$action" in
         list)
             do_list ;;
+        setup-sudo)
+            pm_init; sudo_bootstrap "explicit --setup-sudo" && exit 0 || exit 1 ;;
         all)
             pm_init; do_all ;;
         bundle)
