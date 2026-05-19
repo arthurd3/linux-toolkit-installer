@@ -2,6 +2,8 @@
 
 > **One command. A full dev toolkit. Any major Linux distro.**
 
+<img width="626" height="489" alt="image" src="https://github.com/user-attachments/assets/c1d519be-5bf6-4e67-b028-6ede7d1f4bec" />
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 ![Shell: Bash](https://img.shields.io/badge/shell-bash-4EAA25.svg?logo=gnubash&logoColor=white)
 ![Dependencies: zero](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)
