@@ -3,10 +3,10 @@
 The tool targets four package-manager families. Your distro is mapped to a
 family from `/etc/os-release`.
 
-| Family | Package manager | Detected from `ID` / `ID_LIKE` (examples) |
-|--------|-----------------|-------------------------------------------|
-| `debian` | `apt-get` | debian, ubuntu, linuxmint, pop, raspbian, elementary, kali, devuan, zorin |
-| `fedora` | `dnf`     | fedora, rhel, centos, rocky, almalinux, ol, amzn, scientific |
+| Family | Package manager (binary, in order tried) | Detected from `ID` / `ID_LIKE` (examples) |
+|--------|------------------------------------------|-------------------------------------------|
+| `debian` | `apt-get`, `apt` | debian, ubuntu, linuxmint, pop, raspbian, elementary, kali, devuan, zorin |
+| `fedora` | `dnf`, `dnf5`, `yum` | fedora, rhel, centos, rocky, almalinux, ol, amzn, scientific |
 | `arch`   | `pacman` (+ `yay` for AUR) | arch, manjaro, endeavouros, garuda, artix, cachyos |
 | `suse`   | `zypper`  | opensuse-leap, opensuse-tumbleweed, sles, sled, suse |
 
@@ -15,8 +15,24 @@ family from `/etc/os-release`.
 1. If `LTI_FORCE_FAMILY` is set, it wins (must be one of the four families).
 2. Read `ID` from `/etc/os-release`; map it to a family.
 3. If `ID` is unrecognized, try each token of `ID_LIKE` in order.
-4. If nothing matches → `unknown`; `install.sh` exits with code `2` and a
-   message listing the supported families and the `--force-family` override.
+4. If nothing matches → `unknown`. `lib/pkg.sh` then tries to adopt whatever
+   supported package manager is actually on `PATH` (priority `apt, dnf,
+   pacman, zypper`) and re-points the family accordingly. Only if no known
+   package manager exists does the tool exit with code `2` (unless
+   `--dry-run`).
+
+## Package-manager resolution (`lib/pkg.sh`)
+
+The family is only a hint. `pm_detect` picks the package manager from what is
+installed:
+
+- It probes `PATH` for the family's binary candidates in order — for
+  `fedora`: `dnf` → `dnf5` → `yum` (all RPM-based, identical command shape).
+- `LTI_FORCE_FAMILY` is never auto-switched: if its package manager is
+  missing, that is fatal (exit 2) unless `--dry-run`.
+- If a detected (os-release) family's package manager is absent but another
+  supported one is present, that one is adopted and the family is re-pointed
+  (a `WARN` explains the switch — it changes which `*.bundle` column applies).
 
 ## Per-family commands
 
@@ -28,6 +44,9 @@ family from `/etc/os-release`.
 | suse   | `zypper --non-interactive refresh` | `zypper --non-interactive install` | `rpm -q` |
 
 Privileged commands are prefixed with `sudo` (nothing if already root).
+
+The first column shows the canonical binary; the actually-invoked binary is
+whatever `pm_detect` resolved (`PM_BIN`) — e.g. `yum`/`dnf5` for `fedora`.
 
 ## Overrides / testing hooks
 

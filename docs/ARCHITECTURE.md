@@ -16,9 +16,36 @@ Each module guards against double-sourcing and is safe to re-source.
 | `lib/core.sh`   | strict mode (`set -euo pipefail`), `LTI_ROOT` resolution (symlink-safe), runtime-flag globals, EXIT cleanup trap, `lti_fatal`, `require_bash4` | — |
 | `lib/ui.sh`     | color gating (`[[ -t 1 && -z $NO_COLOR && $TERM != dumb ]]`), `say/info/ok/warn/error`, `banner`, `hr`, `confirm` | core |
 | `lib/distro.sh` | `detect_distro_family` from `/etc/os-release` `ID`/`ID_LIKE` → `debian\|fedora\|arch\|suse\|unknown` | core |
-| `lib/pkg.sh`    | `pm_init/pm_require_privileges/pm_refresh/pm_is_installed/pm_install` over apt/dnf/pacman/zypper; sudo strategy; dry-run | core, ui, distro |
+| `lib/pkg.sh`    | `pm_detect` (logical `PM_NAME` vs concrete `PM_BIN`), `pm_init/pm_require_privileges/pm_refresh/pm_is_installed/pm_install` over apt/dnf/pacman/zypper; sudo strategy; dry-run | core, ui, distro |
 | `lib/aur.sh`    | Arch-only `yay` bootstrap (hardened: mktemp + EXIT trap) and `aur_install` | core, ui, pkg |
 | `lib/bundle.sh` | parse `*.bundle`, `bundle_resolve` (pure), `bundle_run`, summary accounting | core, ui, pkg, aur |
+
+## Package-manager resolution (`lib/pkg.sh`)
+
+The distro family is a *hint*; the package manager is chosen from what is
+actually installed.
+
+- `PM_NAME` — logical PM, drives command shape: `apt | dnf | pacman | zypper`.
+- `PM_BIN` — the concrete binary invoked. Candidates, in order:
+  - `apt` → `apt-get`, `apt`
+  - `dnf` → `dnf`, `dnf5`, `yum`
+  - `pacman` → `pacman`
+  - `zypper` → `zypper`
+
+`pm_detect` resolution order:
+
+1. `LTI_FORCE_FAMILY` set → that family and its PM are locked (never
+   auto-switched); a missing binary is fatal unless `--dry-run`.
+2. Detected family whose PM is present → use it.
+3. Detected family whose PM is absent but another known PM is present → adopt
+   the present one and re-point `DISTRO_FAMILY` to its family (a `WARN` is
+   printed; this changes which `*.bundle` column applies).
+4. `unknown` family → adopt the first present PM by priority `apt, dnf,
+   pacman, zypper`.
+5. No known PM at all → fatal (exit 2), unless `--dry-run`.
+
+`yum`/`dnf5` reuse the `dnf` command shape; `pm_is_installed` keys off
+`PM_NAME` so `rpm -q` still covers all three.
 
 ## Data flow
 
