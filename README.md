@@ -1,4 +1,4 @@
-# linux-toolkit-installer
+# Linux Toolkit Installer
 
 > **One command. A full dev toolkit. Any major Linux distro.**
 
