@@ -14,6 +14,7 @@
 #   pm_refresh             update the package index once per run
 #   pm_is_installed <pkg>  0 if installed, 1 otherwise (never trips set -e)
 #   pm_install <pkg...>    install packages (prints, doesn't run, in --dry-run)
+#   _pm_install_argv <pkg...>  raw install argv (no $SUDO); shared with sudo.sh
 
 [[ -n ${_LTI_PKG_SH:-} ]] && return 0
 _LTI_PKG_SH=1
@@ -211,6 +212,21 @@ pm_is_installed() {
         *)
             return 1 ;;
     esac
+}
+
+# Pure: echo the raw install argv (NO $SUDO) for the resolved PM, as one line.
+# Shared with lib/sudo.sh, which wraps it in `su root -c` to bootstrap sudo.
+# Ends with an explicit return (set -e safe in any caller).
+_pm_install_argv() {
+    (( $# > 0 )) || return 1
+    case "$PM_NAME" in
+        apt)    printf 'env DEBIAN_FRONTEND=noninteractive %s install -y %s\n' "$PM_BIN" "$*" ;;
+        dnf)    printf '%s install -y %s\n' "$PM_BIN" "$*" ;;
+        pacman) printf '%s -S --needed --noconfirm %s\n' "$PM_BIN" "$*" ;;
+        zypper) printf '%s --non-interactive install %s\n' "$PM_BIN" "$*" ;;
+        *)      return 1 ;;
+    esac
+    return 0
 }
 
 pm_install() {
