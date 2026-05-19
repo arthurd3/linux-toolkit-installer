@@ -125,6 +125,7 @@ _resolve() {
             pm_install foo bar
         '
     rm -rf "$t"
+    [ "$status" -eq 0 ]
     [[ "$output" == *"[dry-run] sudo yum -y makecache"* ]]
     [[ "$output" == *"[dry-run] sudo yum install -y foo bar"* ]]
 }
