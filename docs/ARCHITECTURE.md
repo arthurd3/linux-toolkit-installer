@@ -41,7 +41,7 @@ actually installed.
    the present one and re-point `DISTRO_FAMILY` to its family (a `WARN` is
    printed; this changes which `*.bundle` column applies).
 4. `unknown` family → adopt the first present PM by priority `apt, dnf,
-   pacman, zypper`.
+   pacman, zypper` (a `WARN` is printed to stderr).
 5. No known PM at all → fatal (exit 2), unless `--dry-run`.
 
 `yum`/`dnf5` reuse the `dnf` command shape; `pm_is_installed` keys off

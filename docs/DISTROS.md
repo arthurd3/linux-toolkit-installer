@@ -33,6 +33,9 @@ installed:
 - If a detected (os-release) family's package manager is absent but another
   supported one is present, that one is adopted and the family is re-pointed
   (a `WARN` explains the switch — it changes which `*.bundle` column applies).
+- An unrecognized distro (family `unknown`) that still has a supported package
+  manager on `PATH` adopts it the same way (priority `apt, dnf, pacman,
+  zypper`), also printing a `WARN` to stderr.
 
 ## Per-family commands
 
