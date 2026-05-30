@@ -5,7 +5,7 @@
 - Pure Bash 4+, **zero external dependencies** in `lib/` and `install.sh`
   (no fzf/whiptail/zenity/jq). Only coreutils + the system package manager.
 - `set -euo pipefail` is set by `lib/core.sh`. Wrap fallible probes
-  (`if cmd; then`, `|| true`, explicit `return`) — see `docs/ARCHITECTURE.md`.
+  (`if cmd; then`, `|| true`, explicit `return`).
 - Color/box-drawing must stay gated on
   `[[ -t 1 && -z $NO_COLOR && $TERM != dumb ]]` (handled in `lib/ui.sh`).
 - 4-space indent, LF, no trailing whitespace (`.editorconfig`).
@@ -14,7 +14,7 @@
 ## Most changes are data, not code
 
 Adding tools or fixing a package name = editing a `bundles/*.bundle` file.
-No Bash changes needed. See `docs/BUNDLES.md`.
+No Bash changes needed — see [Bundle file format](README.md#bundle-file-format) in the README.
 
 ## Before opening a PR
 

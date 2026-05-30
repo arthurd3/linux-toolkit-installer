@@ -2,7 +2,7 @@
 # install.sh — linux-toolkit-installer entrypoint.
 #
 # Install a whole development toolkit with one keypress, on any major Linux
-# distro (debian / fedora / arch / suse families). See README.md and docs/.
+# distro (debian / fedora / arch / suse families). See README.md.
 #
 # Usage:
 #   ./install.sh                 interactive menu

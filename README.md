@@ -27,6 +27,7 @@ openSUSE** family distros.
 - [Setting up sudo](#setting-up-sudo)
 - [Install as a command](#install-as-a-command)
 - [Troubleshooting](#troubleshooting)
+- [Bundle file format](#bundle-file-format)
 - [Docs and contributing](#docs-and-contributing)
 - [The personal/ directory](#the-personal-directory)
 - [License](#license)
@@ -142,7 +143,7 @@ it provides and the package name for every distro family.
 openSUSE. The others are *best-effort*: package names are correct where we're
 confident and marked as unavailable where we're not. Fixing or extending them
 is **data only** — edit the matching `bundles/*.bundle` file, no code changes.
-See [`docs/BUNDLES.md`](docs/BUNDLES.md) for the format and how to add your own.
+See [Bundle file format](#bundle-file-format) for the format and how to add your own.
 
 ## How it picks the right packages
 
@@ -150,14 +151,18 @@ Your distro is detected automatically from `/etc/os-release` and mapped to one
 of four families. The tool then uses whichever supported package manager is
 actually installed (`apt`, `dnf`, `pacman`, or `zypper`).
 
+| Family | Package manager (tried in order) | Distros (examples) |
+|--------|----------------------------------|--------------------|
+| `debian` | `apt-get`, `apt` | Debian, Ubuntu, Mint, Pop!_OS, Raspberry Pi OS, elementary, Kali, Devuan, Zorin |
+| `fedora` | `dnf`, `dnf5`, `yum` | Fedora, RHEL, CentOS, Rocky, AlmaLinux, Oracle, Amazon, Scientific |
+| `arch` | `pacman` (+ `yay` for AUR) | Arch, Manjaro, EndeavourOS, Garuda, Artix, CachyOS |
+| `suse` | `zypper` | openSUSE Leap/Tumbleweed, SLES, SLED |
+
 If your distro isn't recognized, just tell it which family to use:
 
 ```sh
 ./install.sh --force-family debian   # or fedora | arch | suse
 ```
-
-The full distro list and the package-manager resolution details are in
-[`docs/DISTROS.md`](docs/DISTROS.md).
 
 ## Safety and re-runs
 
@@ -246,19 +251,49 @@ the rest of the toolkit still installs.
 
 **A package name is wrong or out of date**
 No code change needed — edit the relevant `bundles/<name>.bundle` file and
-re-run `./install.sh --list` to confirm. See [`docs/BUNDLES.md`](docs/BUNDLES.md).
+re-run `./install.sh --list` to confirm. See [Bundle file format](#bundle-file-format).
 
 **I want to see absolutely everything it would do**
 `./install.sh --dry-run --all --with-optional`
 
+## Bundle file format
+
+Toolkits are plain-text files in `bundles/`, one per toolkit, named
+`<slug>.bundle` (the slug is the `--bundle` name):
+
+```
+name: <Human Name>     shown in the menu / summary
+description: <text>    shown before install
+[core]                 always installed
+[optional]             installed only with --with-optional / --all
+<id> | debian=<pkg> | fedora=<pkg> | arch=<pkg> | suse=<pkg>
+```
+
+- `<id>` is a stable logical name used in messages and the summary.
+- Each `family=<pkg>` token is optional. An **omitted family or `family=-`**
+  means "no package there" — that tool is skipped with a warning, never fatal.
+- Multiple packages for one tool: join with `+`
+  (`debian=openjdk-17-jdk+openjdk-17-source`).
+- Arch-only AUR package: `arch=aur:<pkg>` (treated as "no package" elsewhere).
+- Lines before the first `[core]`/`[optional]` marker default to the core group.
+
+**Adding a toolkit** is data-only — no Bash changes. Create
+`bundles/<slug>.bundle`, then check how it resolves:
+
+```sh
+./install.sh --list                                  # your distro
+./install.sh --force-family fedora --dry-run --bundle <slug> --with-optional
+```
+
+Add a case to `tests/` if it introduces a new parsing edge case.
+
 ## Docs and contributing
 
-| Document | What's in it |
-|----------|--------------|
-| [`docs/BUNDLES.md`](docs/BUNDLES.md) | Bundle file format; how to add a toolkit |
-| [`docs/DISTROS.md`](docs/DISTROS.md) | Supported distros; package-manager resolution |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Design and module layout |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Style, tests, and the local checks |
+The two reference topics live in this README:
+[Bundle file format](#bundle-file-format) and
+[How it picks the right packages](#how-it-picks-the-right-packages) (supported
+distros). For code style, tests, and the local checks, see
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 **Most changes are data, not code** — adding a tool or fixing a package name
 is just an edit to a `bundles/*.bundle` file. The local gate is `make check`

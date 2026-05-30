@@ -4,7 +4,7 @@
 # Depends on: lib/core.sh, lib/ui.sh, lib/pkg.sh, lib/aur.sh (arch only),
 #             DISTRO_FAMILY / DISTRO_ID set by detect_distro_family.
 #
-# Bundle file grammar (see docs/BUNDLES.md):
+# Bundle file grammar (see the "Bundle file format" section in README.md):
 #   #comment            ignored
 #   name: <Name>        header
 #   description: <text> header

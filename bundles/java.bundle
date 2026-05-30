@@ -1,7 +1,7 @@
 # Java development toolkit  —  flagship bundle (fully populated)
 #
 # Java 17 LTS is the cross-distro default. To target another LTS, change only
-# the package names below (data-only, no code change). See docs/BUNDLES.md.
+# the package names below (data-only, no code change). See README.md.
 #
 # Format:  <id> | debian=<pkg> | fedora=<pkg> | arch=<pkg> | suse=<pkg>
 #   omitted family or `=-`  -> skipped on that distro (warn, continue)
