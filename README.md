@@ -25,6 +25,7 @@ openSUSE** family distros.
 - [How it picks the right packages](#how-it-picks-the-right-packages)
 - [Safety and re-runs](#safety-and-re-runs)
 - [Setting up sudo](#setting-up-sudo)
+- [Mounting a disk](#mounting-a-disk)
 - [Install as a command](#install-as-a-command)
 - [Troubleshooting](#troubleshooting)
 - [Bundle file format](#bundle-file-format)
@@ -87,6 +88,7 @@ of toolkits, and these keys:
 | `a` | Install the core group of **all** toolkits |
 | `d` | Toggle **dry-run** (preview-only, no changes) on/off |
 | `o` | Toggle **optional** extras on/off |
+| `m` | Detect and mount a disk (interactive picker) |
 | `s` | Set up a secure `sudo` privilege path (shown unless you are already root) |
 | `q` | Quit |
 
@@ -102,6 +104,7 @@ of toolkits, and these keys:
 | `--yes`, `-y` | Skip confirmation prompts |
 | `--force-family <f>` | Override distro detection: `debian`, `fedora`, `arch`, or `suse` |
 | `--setup-sudo` | Install and securely configure `sudo` (admin group + `visudo`-validated sudoers), then exit |
+| `--mount` | Detect and mount a disk interactively, then exit |
 | `-h`, `--help` | Show usage |
 
 ### Common examples
@@ -221,6 +224,24 @@ write failure never blocks anything. No secrets are ever stored.
 
 After the bootstrap completes, **log out and back in** (or run
 `newgrp <group>`) for the new group membership to take effect.
+
+## Mounting a disk
+
+Press **`m`** in the menu (or run `./install.sh --mount`) to attach an extra
+disk. The tool lists the partitions it finds — device, size, filesystem,
+label, and whether each is already mounted — and you pick one by number. It
+mounts the chosen partition at `/run/media/$USER/<label>` (you can type a
+different path), using `ntfs-3g` for NTFS and offering to install it if it is
+missing.
+
+```sh
+./install.sh --mount             # detect, pick, and mount a disk
+./install.sh --mount --dry-run   # just print the mkdir/mount commands
+```
+
+The mount lasts for the current session only — it is not added to
+`/etc/fstab`, so it does not persist across reboots. Mounting needs root, so
+you may be prompted for `sudo` when you confirm.
 
 ## Install as a command
 
