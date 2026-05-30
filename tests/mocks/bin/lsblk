@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Mock lsblk: emit a canned `lsblk -P -o PATH,SIZE,FSTYPE,LABEL,MOUNTPOINT,TYPE`
+# block on stdout and exit 0. Never touches real block devices. The fixture is
+# overridable: set LTI_MOCK_LSBLK to print that verbatim instead; otherwise the
+# DEFAULT below exercises every _disk_enumerate filter/branch (whole disk and
+# swap dropped; mounted partitions and an empty/ spaced LABEL kept).
+if [[ -n ${LTI_MOCK_LSBLK:-} ]]; then
+    printf '%s\n' "$LTI_MOCK_LSBLK"
+    exit 0
+fi
+cat <<'EOF'
+PATH="/dev/sda"  SIZE="931.5G" FSTYPE=""     LABEL=""              MOUNTPOINT=""          TYPE="disk"
+PATH="/dev/sda1" SIZE="931.5G" FSTYPE="ntfs" LABEL="ThuzinMemoria" MOUNTPOINT=""          TYPE="part"
+PATH="/dev/sdb1" SIZE="3.6T"   FSTYPE="ext4" LABEL="backup"        MOUNTPOINT=""          TYPE="part"
+PATH="/dev/sdc1" SIZE="16G"    FSTYPE="vfat" LABEL="USB STICK"     MOUNTPOINT="/media/usb" TYPE="part"
+PATH="/dev/nvme0n1p1" SIZE="512M" FSTYPE="vfat" LABEL=""           MOUNTPOINT="/boot/efi" TYPE="part"
+PATH="/dev/nvme0n1p2" SIZE="8G" FSTYPE="swap"  LABEL=""            MOUNTPOINT="[SWAP]"    TYPE="part"
+EOF
+exit 0

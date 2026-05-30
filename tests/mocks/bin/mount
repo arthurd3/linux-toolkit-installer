@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "mount $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+# Capture only — never really mounts. LTI_MOCK_MOUNT_RC tests the failure path.
+exit "${LTI_MOCK_MOUNT_RC:-0}"
