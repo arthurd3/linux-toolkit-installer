@@ -29,7 +29,6 @@ openSUSE** family distros.
 - [Troubleshooting](#troubleshooting)
 - [Bundle file format](#bundle-file-format)
 - [Docs and contributing](#docs-and-contributing)
-- [The personal/ directory](#the-personal-directory)
 - [License](#license)
 
 ## What it does
@@ -299,12 +298,6 @@ distros). For code style, tests, and the local checks, see
 is just an edit to a `bundles/*.bundle` file. The local gate is `make check`
 (static checks + a dry-run across all four families); it never installs
 anything for real.
-
-## The personal/ directory
-
-`personal/` holds machine-specific scripts (an NTFS auto-mount) kept by the
-original author. They are **not part of the tool**, are never called by
-`install.sh`, and you can ignore or delete them. See `personal/README.md`.
 
 ## License
 

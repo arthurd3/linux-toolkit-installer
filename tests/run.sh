@@ -12,7 +12,7 @@ rc=0
 SH_FILES=(install.sh lib/*.sh tests/run.sh)
 
 echo "== bash -n (syntax, always) =="
-for f in "${SH_FILES[@]}" personal/*.sh; do
+for f in "${SH_FILES[@]}"; do
     [[ -e $f ]] || continue
     if bash -n "$f"; then
         echo "  ok    $f"
