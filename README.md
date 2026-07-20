@@ -26,6 +26,7 @@ openSUSE** family distros.
 - [Safety and re-runs](#safety-and-re-runs)
 - [Setting up sudo](#setting-up-sudo)
 - [Mounting a disk](#mounting-a-disk)
+- [Setting up Docker](#setting-up-docker)
 - [Install as a command](#install-as-a-command)
 - [Troubleshooting](#troubleshooting)
 - [Bundle file format](#bundle-file-format)
@@ -89,6 +90,7 @@ of toolkits, and these keys:
 | `d` | Toggle **dry-run** (preview-only, no changes) on/off |
 | `o` | Toggle **optional** extras on/off |
 | `m` | Detect and mount a disk (interactive picker) |
+| `k` | Install and bring up **Docker** (daemon + sysctl + runtime) |
 | `s` | Set up a secure `sudo` privilege path (shown unless you are already root) |
 | `q` | Quit |
 
@@ -105,6 +107,7 @@ of toolkits, and these keys:
 | `--force-family <f>` | Override distro detection: `debian`, `fedora`, `arch`, or `suse` |
 | `--setup-sudo` | Install and securely configure `sudo` (admin group + `visudo`-validated sudoers), then exit |
 | `--mount` | Detect and mount a disk interactively, then exit |
+| `--docker` | Install and configure Docker (daemon, sysctl, runtime), then exit |
 | `-h`, `--help` | Show usage |
 
 ### Common examples
@@ -243,6 +246,62 @@ The mount lasts for the current session only — it is not added to
 `/etc/fstab`, so it does not persist across reboots. Mounting needs root, so
 you may be prompted for `sudo` when you confirm.
 
+## Setting up Docker
+
+Installing Docker from a distro package sometimes leaves it unable to start —
+the daemon isn't enabled, the `runc` runtime is missing (so BuildKit crash-loops),
+IP forwarding is off, or bridge traffic never reaches nftables. Press **`k`** in
+the menu (or run `./install.sh --docker`) to install Docker **and** bring it up
+correctly in one step. It is idempotent — safe to run on a fresh machine or to
+repair a broken install.
+
+### Diagnose first: `--docker-check`
+
+Not sure what's wrong? Run a **read-only health check** (menu key **`c`**, no root
+needed) that inspects every layer and tells you exactly what to fix:
+
+```sh
+./install.sh --docker-check
+```
+
+```text
+[OK]   engine  — real Docker on PATH
+[FAIL] runtime — no runc/crun — BuildKit and containers will fail to start
+[OK]   service — active and enabled on boot
+[WARN] group   — you are in 'docker' but THIS shell predates it — run 'newgrp docker' or log out/in
+[WARN] module  — br_netfilter not loaded
+```
+
+It checks the engine (including whether `docker` is really **Podman's shim**,
+common on Fedora), the `runc`/`crun` runtime, the service, socket reachability,
+Compose, your `docker` group membership, `ip_forward`, and the kernel modules.
+It exits non-zero when it finds problems, so you can use it as a healthcheck.
+
+### Fixing it: `--docker`
+
+`--docker` runs the same diagnosis, then fixes the gaps. It installs your distro's
+engine (`moby-engine` on Fedora, `docker.io` on Debian/Ubuntu, `docker` on
+Arch/openSUSE) and explicitly ensures `containerd` and `runc`, then:
+
+- writes `/etc/modules-load.d/docker.conf` (`overlay`, `br_netfilter`) and loads them;
+- writes `/etc/sysctl.d/99-docker.conf` (`net.ipv4.ip_forward` + bridge-netfilter) and applies it;
+- clears any prior start rate-limit (`systemctl reset-failed`) and runs `systemctl enable --now docker`;
+- ensures the `docker` group exists and handles membership intelligently — it only
+  offers to add you when you're genuinely not a member; if you're already in the
+  group but your current shell predates it, it tells you to run `newgrp docker` (or
+  re-login) instead of pointlessly re-adding you. (Group membership grants
+  root-equivalent access, so it always asks first.)
+- warns (without changing anything) if `docker` is Podman's shim rather than real Docker.
+
+```sh
+./install.sh --docker             # diagnose, then install + configure + start Docker
+./install.sh --docker --dry-run   # show the diagnosis + every command it would run
+```
+
+Docker needs root, so you may be prompted for `sudo` when you confirm. To preview
+everything first — packages, the exact config files, and the `systemctl`/`sysctl`
+commands — use `--dry-run`, which changes nothing.
+
 ## Install as a command
 
 To run it from anywhere as `linux-toolkit-installer`:
@@ -272,6 +331,16 @@ the rest of the toolkit still installs.
 **A package name is wrong or out of date**
 No code change needed — edit the relevant `bundles/<name>.bundle` file and
 re-run `./install.sh --list` to confirm. See [Bundle file format](#bundle-file-format).
+
+**Docker won't start (`Cannot connect to the Docker daemon`, `failed to find runc binary`)**
+The distro package installed but the host wasn't set up. Run `./install.sh --docker`
+(or press **`k`**) — it ensures `runc`/`containerd`, sets the required sysctls and
+kernel modules, and enables + starts the daemon. See [Setting up Docker](#setting-up-docker).
+
+**`permission denied … /var/run/docker.sock` when running `docker` without sudo**
+Run `./install.sh --docker-check`. If it says you're in the `docker` group but this
+shell predates it, run `newgrp docker` (or log out and back in) — re-adding yourself
+won't help. If it says you're not a member, `./install.sh --docker` can add you.
 
 **I want to see absolutely everything it would do**
 `./install.sh --dry-run --all --with-optional`
