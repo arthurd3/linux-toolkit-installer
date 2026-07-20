@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "cmake $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "cmake version 4.3.0" ;; esac
+exit 0

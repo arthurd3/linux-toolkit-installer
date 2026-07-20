@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "cargo-clippy $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "clippy 0.1.96 (31fca3ad 2026-06-26)" ;; esac
+exit 0

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+echo "rustc $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in
+    --version) printf '%s\n' "${LTI_MOCK_RUSTC_VERSION:-rustc 1.96.1 (31fca3adb 2026-06-26)}" ;;
+esac
+exit 0

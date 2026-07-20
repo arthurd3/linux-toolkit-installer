@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "rustup-init $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit "${LTI_MOCK_RUSTUP_RC:-0}"
