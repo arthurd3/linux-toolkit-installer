@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Mock modprobe — capture only, never loads modules. LTI_MOCK_MODPROBE_RC
+# exercises the "module could not load now" warning path.
+echo "modprobe $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit "${LTI_MOCK_MODPROBE_RC:-0}"

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Mock getent — capture only. `getent group docker` succeeds (prints a line)
+# unless LTI_MOCK_GROUP_DOCKER=absent, which exits 2 like real getent on a
+# missing key.
+echo "getent $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+if [[ ${1:-} == group && ${2:-} == docker ]]; then
+    [[ ${LTI_MOCK_GROUP_DOCKER:-present} == absent ]] && exit 2
+    printf 'docker:x:990:%s\n' "${LTI_MOCK_GROUP_DOCKER_MEMBERS:-}"
+    exit 0
+fi
+exit 0

@@ -3,7 +3,11 @@ echo "id $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
 case "${1:-}" in
     -u)  printf '%s\n' "${LTI_MOCK_UID:-1000}" ;;
     -un) printf '%s\n' "${LTI_MOCK_USER:-tester}" ;;
-    -nG) printf '%s\n' "${LTI_MOCK_GROUPS:-tester}" ;;
+    -nG) if [[ -n ${2:-} ]]; then
+             printf '%s\n' "${LTI_MOCK_GROUPS_USER:-${LTI_MOCK_GROUPS:-tester}}"
+         else
+             printf '%s\n' "${LTI_MOCK_GROUPS:-tester}"
+         fi ;;
     *)   printf '%s\n' "${LTI_MOCK_UID:-1000}" ;;
 esac
 exit 0

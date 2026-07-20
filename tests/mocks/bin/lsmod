@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Mock lsmod — prints the header plus one row per module named in LTI_MOCK_MODULES
+# (space-separated; default: none loaded). Capture-only.
+echo "lsmod $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+printf 'Module                  Size  Used by\n'
+for m in ${LTI_MOCK_MODULES:-}; do
+    printf '%-22s %6s  %s\n' "$m" 16384 0
+done
+exit 0
