@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Mock rustup — capture; `--version` canned; every subcommand (default,
+# component add, …) exits LTI_MOCK_RUSTUP_RC (default 0).
+echo "rustup $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in
+    --version) printf '%s\n' "${LTI_MOCK_RUSTUP_VERSION:-rustup 1.27.1 (2026-01-01)}"; exit 0 ;;
+esac
+exit "${LTI_MOCK_RUSTUP_RC:-0}"

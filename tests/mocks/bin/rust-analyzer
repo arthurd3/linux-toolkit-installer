@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "rust-analyzer $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "rust-analyzer 1.96.1 (31fca3ad 2026-06-26)" ;; esac
+exit 0

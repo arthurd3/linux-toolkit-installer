@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Mock c++ (g++'s generic name) — see the g++ mock.
+echo "c++ $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+for a in "$@"; do
+    case "$a" in
+        --version)    printf '%s\n' "${LTI_MOCK_GXX_VERSION:-c++ (GCC) 16.1.1 20260515}"; exit 0 ;;
+        -dumpversion) printf '16\n'; exit 0 ;;
+    esac
+done
+out=""; prev=""
+for a in "$@"; do [[ $prev == -o ]] && out=$a; prev=$a; done
+cat >/dev/null 2>&1 || true
+if [[ -n $out ]]; then : > "$out" && chmod +x "$out" 2>/dev/null || true; fi
+exit "${LTI_MOCK_CC_RC:-0}"

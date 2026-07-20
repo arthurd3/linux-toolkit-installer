@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "clang $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "clang version 18.1.8 (Fedora)" ;; esac
+exit 0

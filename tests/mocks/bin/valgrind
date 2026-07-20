@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "valgrind $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "valgrind-3.23.0" ;; esac
+exit 0

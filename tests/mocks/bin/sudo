@@ -2,4 +2,13 @@
 echo "sudo $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
 # `sudo -v` just validates; succeed without execing.
 [[ ${1:-} == "-v" ]] && exit 0
+# Drop run-as options so `sudo -u <user> -H <cmd>` execs <cmd> through the mocks.
+while [[ ${1:-} == -* ]]; do
+    case "$1" in
+        -u)          shift 2 ;;
+        -H|-E|-n|-i) shift ;;
+        --)          shift; break ;;
+        *)           break ;;
+    esac
+done
 exec "$@"

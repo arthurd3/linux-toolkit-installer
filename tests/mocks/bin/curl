@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Mock curl — capture; the rustup bootstrap pipes our stdout into `sh`, so emit
+# a trivial no-op script.
+echo "curl $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+printf '%s\n' '#!/bin/sh' 'exit 0'
+exit 0

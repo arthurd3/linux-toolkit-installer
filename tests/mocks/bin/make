@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "make $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in --version) printf '%s\n' "GNU Make 4.4.1" ;; esac
+exit 0

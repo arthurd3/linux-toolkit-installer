@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Mock gcc — capture + canned version; a compile call (-o <file>) consumes the
+# piped source and creates the target as a runnable file so compile+link checks
+# pass. Failure injectable via LTI_MOCK_CC_RC.
+echo "gcc $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+for a in "$@"; do
+    case "$a" in
+        --version)    printf '%s\n' "${LTI_MOCK_GCC_VERSION:-gcc (GCC) 16.1.1 20260515 (Red Hat 16.1.1-2)}"; exit 0 ;;
+        -dumpversion) printf '16\n'; exit 0 ;;
+    esac
+done
+out=""; prev=""
+for a in "$@"; do [[ $prev == -o ]] && out=$a; prev=$a; done
+cat >/dev/null 2>&1 || true
+if [[ -n $out ]]; then : > "$out" && chmod +x "$out" 2>/dev/null || true; fi
+exit "${LTI_MOCK_CC_RC:-0}"
