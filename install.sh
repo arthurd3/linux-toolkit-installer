@@ -35,6 +35,8 @@ source "$LTI_ROOT/lib/pkg.sh"
 source "$LTI_ROOT/lib/sudo.sh"
 source "$LTI_ROOT/lib/disk.sh"
 source "$LTI_ROOT/lib/docker.sh"
+source "$LTI_ROOT/lib/cpp.sh"
+source "$LTI_ROOT/lib/rust.sh"
 source "$LTI_ROOT/lib/aur.sh"
 source "$LTI_ROOT/lib/bundle.sh"
 
@@ -57,6 +59,10 @@ OPTIONS
   --mount                    detect and mount a disk interactively, then exit
   --docker                   install & configure Docker (daemon + sysctl), then exit
   --docker-check             report Docker health and what's missing, then exit
+  --cpp                      install the full C/C++ toolchain (+ verify), then exit
+  --cpp-check                report C/C++ toolchain health, then exit
+  --rust                     install the Rust toolchain via rustup (+ verify), then exit
+  --rust-check               report Rust toolchain health, then exit
   -h, --help                 this help
 
 With no options, an interactive menu is shown.
@@ -154,6 +160,10 @@ menu_loop() {
         printf '   m) Mount a disk\n'
         printf '   k) Set up Docker\n'
         printf '   c) Docker health check\n'
+        printf '   t) Set up C/C++ toolchain\n'
+        printf '   u) C/C++ health check\n'
+        printf '   r) Set up Rust toolchain\n'
+        printf '   w) Rust health check\n'
         if declare -F sudo_privilege_state >/dev/null 2>&1 \
            && [[ $(sudo_privilege_state) != root ]]; then
             printf '   s) Set up secure sudo\n'
@@ -170,6 +180,10 @@ menu_loop() {
             m|M) disk_mount || true ;;
             k|K) docker_setup || true ;;
             c|C) docker_diagnose || true ;;
+            t|T) cpp_setup || true ;;
+            u|U) cpp_diagnose || true ;;
+            r|R) rust_setup || true ;;
+            w|W) rust_diagnose || true ;;
             d|D) DRY_RUN=$(( DRY_RUN ^ 1 )); continue ;;
             o|O) WITH_OPTIONAL=$(( WITH_OPTIONAL ^ 1 )); continue ;;
             '')  continue ;;
@@ -210,6 +224,10 @@ main() {
             --mount)          action=mount ;;
             --docker)         action=docker ;;
             --docker-check)   action=docker-check ;;
+            --cpp)            action=cpp ;;
+            --cpp-check)      action=cpp-check ;;
+            --rust)           action=rust ;;
+            --rust-check)     action=rust-check ;;
             *) error "unknown option: $1"; usage; exit 2 ;;
         esac
         shift || true
@@ -255,6 +273,14 @@ main() {
             pm_init; _state_save; docker_setup ;;
         docker-check)
             docker_diagnose ;;
+        cpp)
+            pm_init; _state_save; cpp_setup ;;
+        cpp-check)
+            cpp_diagnose ;;
+        rust)
+            pm_init; _state_save; rust_setup ;;
+        rust-check)
+            rust_diagnose ;;
         all)
             pm_init; _state_save; do_all ;;
         bundle)
