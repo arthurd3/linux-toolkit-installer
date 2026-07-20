@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Mock runc — presence only (diagnosis probes `command -v runc`). Capture-only.
+echo "runc $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit 0

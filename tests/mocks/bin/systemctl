@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Mock systemctl — capture only, never touches real units.
+#   is-active  -> rc 0 when LTI_MOCK_DOCKER_ACTIVE=active (default), else rc 3
+#   is-enabled -> prints LTI_MOCK_DOCKER_ENABLED (default "enabled")
+#   anything else (enable, start, reset-failed, ...) -> LTI_MOCK_SYSTEMCTL_RC
+echo "systemctl $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+
+# First non-option argument is the subcommand.
+sub=""
+for a in "$@"; do
+    case "$a" in
+        -*) continue ;;
+        *)  sub="$a"; break ;;
+    esac
+done
+
+case "$sub" in
+    is-active)
+        [[ "${LTI_MOCK_DOCKER_ACTIVE:-active}" == active ]] && exit 0
+        exit 3 ;;
+    is-enabled)
+        printf '%s\n' "${LTI_MOCK_DOCKER_ENABLED:-enabled}"
+        exit 0 ;;
+    *)
+        exit "${LTI_MOCK_SYSTEMCTL_RC:-0}" ;;
+esac

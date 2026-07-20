@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Mock sysctl — capture only, never changes kernel params.
+#   -n <key> -> print LTI_MOCK_SYSCTL_VALUE (default "1")
+#   anything else (e.g. --system) -> LTI_MOCK_SYSCTL_RC
+echo "sysctl $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+if [[ ${1:-} == -n ]]; then
+    printf '%s\n' "${LTI_MOCK_SYSCTL_VALUE:-1}"
+    exit 0
+fi
+exit "${LTI_MOCK_SYSCTL_RC:-0}"

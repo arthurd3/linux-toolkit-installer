@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Mock groupadd — capture only, never creates a group. LTI_MOCK_GROUPADD_RC
+# exercises the failure path.
+echo "groupadd $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+exit "${LTI_MOCK_GROUPADD_RC:-0}"

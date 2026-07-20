@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Mock docker — capture only.
+#   info|version -> LTI_MOCK_DOCKER_RC (default 0, i.e. daemon reachable)
+#   anything else -> 0
+echo "docker $*" >> "${LTI_TEST_CAPTURE:-/dev/null}"
+case "${1:-}" in
+    --version)    printf '%s\n' "${LTI_MOCK_DOCKER_VERSION:-Docker version 27.0.0, build abcdef0}" ;;
+    info|version) exit "${LTI_MOCK_DOCKER_RC:-0}" ;;
+    compose)      exit "${LTI_MOCK_DOCKER_COMPOSE_RC:-0}" ;;
+    *)            exit 0 ;;
+esac
+exit 0

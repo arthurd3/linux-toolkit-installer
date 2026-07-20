@@ -34,6 +34,7 @@ source "$LTI_ROOT/lib/distro.sh"
 source "$LTI_ROOT/lib/pkg.sh"
 source "$LTI_ROOT/lib/sudo.sh"
 source "$LTI_ROOT/lib/disk.sh"
+source "$LTI_ROOT/lib/docker.sh"
 source "$LTI_ROOT/lib/aur.sh"
 source "$LTI_ROOT/lib/bundle.sh"
 
@@ -54,6 +55,8 @@ OPTIONS
   --force-family <f>         override distro family: debian|fedora|arch|suse
   --setup-sudo               install & securely configure sudo, then exit
   --mount                    detect and mount a disk interactively, then exit
+  --docker                   install & configure Docker (daemon + sysctl), then exit
+  --docker-check             report Docker health and what's missing, then exit
   -h, --help                 this help
 
 With no options, an interactive menu is shown.
@@ -149,6 +152,8 @@ menu_loop() {
         printf '   d) Toggle dry-run     [%s]\n' "$( ((DRY_RUN)) && echo ON || echo OFF)"
         printf '   o) Toggle optionals   [%s]\n' "$( ((WITH_OPTIONAL)) && echo ON || echo OFF)"
         printf '   m) Mount a disk\n'
+        printf '   k) Set up Docker\n'
+        printf '   c) Docker health check\n'
         if declare -F sudo_privilege_state >/dev/null 2>&1 \
            && [[ $(sudo_privilege_state) != root ]]; then
             printf '   s) Set up secure sudo\n'
@@ -163,6 +168,8 @@ menu_loop() {
             a|A) do_all || true ;;
             s|S) sudo_bootstrap "from menu" || true ;;
             m|M) disk_mount || true ;;
+            k|K) docker_setup || true ;;
+            c|C) docker_diagnose || true ;;
             d|D) DRY_RUN=$(( DRY_RUN ^ 1 )); continue ;;
             o|O) WITH_OPTIONAL=$(( WITH_OPTIONAL ^ 1 )); continue ;;
             '')  continue ;;
@@ -201,6 +208,8 @@ main() {
             --force-family=*) LTI_FORCE_FAMILY=${1#*=} ;;
             --setup-sudo)     action=setup-sudo ;;
             --mount)          action=mount ;;
+            --docker)         action=docker ;;
+            --docker-check)   action=docker-check ;;
             *) error "unknown option: $1"; usage; exit 2 ;;
         esac
         shift || true
@@ -242,6 +251,10 @@ main() {
             pm_init; _state_save; sudo_bootstrap "explicit --setup-sudo" && exit 0 || exit 1 ;;
         mount)
             pm_init; _state_save; disk_mount ;;
+        docker)
+            pm_init; _state_save; docker_setup ;;
+        docker-check)
+            docker_diagnose ;;
         all)
             pm_init; _state_save; do_all ;;
         bundle)
