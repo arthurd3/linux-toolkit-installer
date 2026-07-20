@@ -91,6 +91,11 @@ of toolkits, and these keys:
 | `o` | Toggle **optional** extras on/off |
 | `m` | Detect and mount a disk (interactive picker) |
 | `k` | Install and bring up **Docker** (daemon + sysctl + runtime) |
+| `c` | **Docker** health check (read-only) |
+| `t` | Install the full **C/C++** toolchain (gcc/g++, clang, make, cmake, ninja, gdb, valgrind) |
+| `u` | **C/C++** toolchain health check (read-only) |
+| `r` | Install the **Rust** toolchain via rustup (stable + rust-analyzer + rust-src) |
+| `w` | **Rust** toolchain health check (read-only) |
 | `s` | Set up a secure `sudo` privilege path (shown unless you are already root) |
 | `q` | Quit |
 
@@ -108,6 +113,11 @@ of toolkits, and these keys:
 | `--setup-sudo` | Install and securely configure `sudo` (admin group + `visudo`-validated sudoers), then exit |
 | `--mount` | Detect and mount a disk interactively, then exit |
 | `--docker` | Install and configure Docker (daemon, sysctl, runtime), then exit |
+| `--docker-check` | Report Docker health and what's missing (read-only), then exit |
+| `--cpp` | Install the full C/C++ toolchain (compilers, build tools, debugger) and verify it compiles, then exit |
+| `--cpp-check` | Report C/C++ toolchain health (read-only), then exit |
+| `--rust` | Install the Rust toolchain via rustup (stable + `rust-analyzer` + `rust-src`) and verify it builds, then exit |
+| `--rust-check` | Report Rust toolchain health (read-only), then exit |
 | `-h`, `--help` | Show usage |
 
 ### Common examples
@@ -302,6 +312,62 @@ Docker needs root, so you may be prompted for `sudo` when you confirm. To previe
 everything first — packages, the exact config files, and the `systemctl`/`sysctl`
 commands — use `--dry-run`, which changes nothing.
 
+## Setting up the C/C++ and Rust toolchains
+
+Two dedicated modules install a complete native-development environment, each
+with a **read-only health check** and a real **compile/build verification** — the
+same end-to-end sanity check you'd run by hand.
+
+### C/C++: `--cpp` (menu `t`) and `--cpp-check` (menu `u`)
+
+`--cpp` installs the compilers (gcc/g++, clang), the build stack (make, cmake,
+ninja, autoconf/automake/libtool, pkg-config), the debugger (gdb) and the leak
+checker (valgrind), then **compiles and links a trivial C and C++ program** to
+prove the chain works. It lists the individual packages per distro rather than
+using `dnf group install "Development Tools"`, so the same toolchain lands on
+every family and re-runs stay idempotent.
+
+```sh
+./install.sh --cpp-check          # read-only: what's present, with versions
+./install.sh --cpp                # install the toolchain, then verify it compiles
+./install.sh --cpp --dry-run      # show the exact install command, change nothing
+```
+
+```text
+[OK]   cc       — gcc (GCC) 16.1.1
+[OK]   c++      — g++ (GCC) 16.1.1
+[OK]   make     — GNU Make 4.4.1
+[FAIL] clang    — not found (tried: clang)
+[FAIL] valgrind — not found (tried: valgrind)
+```
+
+`--cpp-check` exits non-zero when anything is missing, so you can use it as a
+healthcheck.
+
+### Rust: `--rust` (menu `r`) and `--rust-check` (menu `w`)
+
+`--rust` installs Rust through **rustup**, the official toolchain manager — the
+distro `rustup` package where available, otherwise the official installer at
+`https://sh.rustup.rs`. It sets **stable** as the default toolchain (rustc, cargo,
+clippy, rustfmt) and adds the **rust-analyzer** and **rust-src** components for
+editor/IDE support, then verifies it by building a scratch crate.
+
+```sh
+./install.sh --rust-check         # read-only: rustup/rustc/cargo/clippy/…, plus the C-linker check
+./install.sh --rust               # install rustup + stable + components, then build-test
+./install.sh --rust --dry-run     # show every step, change nothing
+```
+
+Two things worth knowing:
+
+- **rustup is per-user.** It installs into `~/.cargo` and `~/.rustup`, so it runs
+  as *you*, never under `sudo` (only the distro package itself installs with root).
+  After it finishes, open a new shell or run `source "$HOME/.cargo/env"` to put
+  `cargo`/`rustc` on your `PATH`.
+- **Rust needs a C linker.** It links final binaries with the system `cc`, so if
+  `cc`/`gcc` is missing, run `./install.sh --cpp` first (`--rust-check` warns about
+  this too).
+
 ## Install as a command
 
 To run it from anywhere as `linux-toolkit-installer`:
@@ -341,6 +407,16 @@ kernel modules, and enables + starts the daemon. See [Setting up Docker](#settin
 Run `./install.sh --docker-check`. If it says you're in the `docker` group but this
 shell predates it, run `newgrp docker` (or log out and back in) — re-adding yourself
 won't help. If it says you're not a member, `./install.sh --docker` can add you.
+
+**`cargo` / `rustc` not found right after `./install.sh --rust`**
+rustup adds `~/.cargo/bin` to your `PATH` via your shell profile, which the
+current shell hasn't re-read yet. Open a new terminal, or run
+`source "$HOME/.cargo/env"`. Confirm with `./install.sh --rust-check`.
+
+**Rust builds fail to link (`error: linker 'cc' not found`)**
+Rust needs a system C compiler to link. Run `./install.sh --cpp` (or press
+**`t`**) to install gcc, then retry. See
+[Setting up the C/C++ and Rust toolchains](#setting-up-the-cc-and-rust-toolchains).
 
 **I want to see absolutely everything it would do**
 `./install.sh --dry-run --all --with-optional`
